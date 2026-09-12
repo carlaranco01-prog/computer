@@ -19,9 +19,9 @@ export default function AdminAssignmentsPage() {
   const [loading, setLoading] = useState(false)
   const { toast, show, hide } = useToast()
   const [form, setForm] = useState({ computer_id: '', user_id: '', assigned_date: new Date().toISOString().split('T')[0], remarks: '' })
-  const supabase = createClient()
 
   async function loadData() {
+    const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
     const { data: p } = await supabase.from('profiles').select('*').eq('id', user.id).single()
@@ -55,6 +55,7 @@ export default function AdminAssignmentsPage() {
     e.preventDefault()
     if (!form.computer_id || !form.user_id) { show('Select a computer and user.', 'error'); return }
     setLoading(true)
+    const supabase = createClient()
     const { error } = await supabase.from('computer_assignments').insert({ ...form, status: 'Active' })
     if (error) { show(error.message, 'error'); setLoading(false); return }
     await supabase.from('computers').update({ status: 'Assigned' }).eq('id', form.computer_id)
@@ -68,6 +69,7 @@ export default function AdminAssignmentsPage() {
   }
 
   async function handleReturn(a: ComputerAssignment) {
+    const supabase = createClient()
     await supabase.from('computer_assignments').update({ status: 'Returned', returned_date: new Date().toISOString().split('T')[0] }).eq('id', a.id)
     await supabase.from('computers').update({ status: 'Available' }).eq('id', a.computer_id)
     const { data: { user } } = await supabase.auth.getUser()

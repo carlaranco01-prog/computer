@@ -11,17 +11,16 @@ export default function AdminMessagesPage() {
   const [users, setUsers] = useState<Profile[]>([])
   const [selectedUser, setSelectedUser] = useState<Profile | null>(null)
   const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({})
-  const supabase = createClient()
 
   useEffect(() => {
     async function load() {
+      const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
       const { data: p } = await supabase.from('profiles').select('*').eq('id', user.id).single()
       setProfile(p)
       const { data: u } = await supabase.from('profiles').select('*').eq('role', 'user').order('full_name')
       setUsers(u ?? [])
-      // Count unread per user
       const { data: msgs } = await supabase.from('messages').select('sender_id').eq('receiver_id', user.id).eq('status', 'unread')
       const counts: Record<string, number> = {}
       msgs?.forEach(m => { counts[m.sender_id] = (counts[m.sender_id] ?? 0) + 1 })
@@ -35,7 +34,6 @@ export default function AdminMessagesPage() {
   return (
     <AppShell role="admin" userName={profile.full_name} title="Messages">
       <div className="flex gap-4 h-[calc(100vh-8rem)]">
-        {/* User list */}
         <div className="w-64 shrink-0 card overflow-y-auto">
           <div className="p-4 border-b border-slate-200">
             <p className="text-sm font-semibold text-slate-700">Conversations</p>
@@ -65,7 +63,6 @@ export default function AdminMessagesPage() {
           ))}
         </div>
 
-        {/* Chat area */}
         <div className="flex-1 card overflow-hidden flex flex-col">
           {selectedUser ? (
             <>

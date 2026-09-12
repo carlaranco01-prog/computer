@@ -23,9 +23,9 @@ export default function AdminComputersPage() {
   const [deleteTarget, setDeleteTarget] = useState<Computer | null>(null)
   const [deleting, setDeleting] = useState(false)
   const { toast, show, hide } = useToast()
-  const supabase = createClient()
 
   async function loadData() {
+    const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
     const { data: p } = await supabase.from('profiles').select('*').eq('id', user.id).single()
@@ -56,6 +56,7 @@ export default function AdminComputersPage() {
   async function handleDelete() {
     if (!deleteTarget) return
     setDeleting(true)
+    const supabase = createClient()
     const { error } = await supabase.from('computers').delete().eq('id', deleteTarget.id)
     if (error) { show(error.message, 'error') }
     else {

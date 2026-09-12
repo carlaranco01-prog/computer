@@ -22,9 +22,9 @@ export default function AdminMaintenancePage() {
   const [loading, setLoading] = useState(false)
   const { toast, show, hide } = useToast()
   const [form, setForm] = useState({ computer_id: '', issue: '', description: '', maintenance_date: new Date().toISOString().split('T')[0], status: 'Pending' as MaintenanceStatus, remarks: '' })
-  const supabase = createClient()
 
   async function loadData() {
+    const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
     const { data: p } = await supabase.from('profiles').select('*').eq('id', user.id).single()
@@ -55,6 +55,7 @@ export default function AdminMaintenancePage() {
     e.preventDefault()
     if (!form.computer_id || !form.issue) { show('Fill in required fields.', 'error'); return }
     setLoading(true)
+    const supabase = createClient()
     const { error } = editTarget
       ? await supabase.from('maintenance').update(form).eq('id', editTarget.id)
       : await supabase.from('maintenance').insert(form)

@@ -19,9 +19,9 @@ export default function AdminUsersPage() {
   const [newRole, setNewRole] = useState<'admin' | 'user'>('user')
   const [loading, setLoading] = useState(false)
   const { toast, show, hide } = useToast()
-  const supabase = createClient()
 
   async function loadData() {
+    const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
     const { data: p } = await supabase.from('profiles').select('*').eq('id', user.id).single()
@@ -45,6 +45,7 @@ export default function AdminUsersPage() {
   async function handleRoleUpdate() {
     if (!editRole) return
     setLoading(true)
+    const supabase = createClient()
     const { error } = await supabase.from('profiles').update({ role: newRole }).eq('id', editRole.id)
     if (error) show(error.message, 'error')
     else { show('Role updated!', 'success'); setEditRole(null); loadData() }
@@ -98,7 +99,7 @@ export default function AdminUsersPage() {
                     <td className="table-cell hidden lg:table-cell text-slate-500 text-xs">{new Date(u.created_at).toLocaleDateString()}</td>
                     <td className="table-cell">
                       <div className="flex items-center gap-1">
-                        <button onClick={() => setViewTarget(u)} className="p-1.5 hover:bg-blue-50 text-blue-600 rounded-lg transition-colors" title="View">
+                        <button onClick={() => setViewTarget(u)} className="p-1.5 hover:bg-blue-50 text-blue-600 rounded-lg transition-colors">
                           <Eye size={15} />
                         </button>
                         <button onClick={() => { setEditRole(u); setNewRole(u.role) }} className="text-xs btn-secondary py-1 px-2">
