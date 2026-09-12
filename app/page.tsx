@@ -1,7 +1,22 @@
+import { redirect } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { Monitor, Shield, Wrench, MessageSquare, BarChart3, Users, CheckCircle, ArrowRight } from 'lucide-react'
 
-export default function HomePage() {
+export default async function HomePage() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+    if (profile?.role === 'admin') redirect('/admin/dashboard')
+    else redirect('/dashboard')
+  }
+
   return (
     <div className="min-h-screen bg-white">
       {/* Navbar */}
@@ -76,47 +91,15 @@ export default function HomePage() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
-              {
-                icon: <Monitor size={24} className="text-blue-600" />,
-                bg: 'bg-blue-50',
-                title: 'Computer Tracking',
-                desc: 'Track every computer with full specs — brand, model, processor, RAM, storage, OS, and location.',
-              },
-              {
-                icon: <Users size={24} className="text-green-600" />,
-                bg: 'bg-green-50',
-                title: 'User Management',
-                desc: 'Manage staff and student accounts with role-based access. Admins get full control, users get their own view.',
-              },
-              {
-                icon: <Shield size={24} className="text-purple-600" />,
-                bg: 'bg-purple-50',
-                title: 'Computer Assignments',
-                desc: 'Assign computers to users, track assignment history, and mark returns with a single click.',
-              },
-              {
-                icon: <Wrench size={24} className="text-orange-600" />,
-                bg: 'bg-orange-50',
-                title: 'Maintenance Records',
-                desc: 'Log maintenance issues, track repair status from Pending to Completed, and keep full history.',
-              },
-              {
-                icon: <MessageSquare size={24} className="text-teal-600" />,
-                bg: 'bg-teal-50',
-                title: 'Messaging System',
-                desc: 'Built-in real-time messaging between users and administrators. Report problems directly.',
-              },
-              {
-                icon: <BarChart3 size={24} className="text-red-600" />,
-                bg: 'bg-red-50',
-                title: 'Reports & Analytics',
-                desc: 'Visual charts for computer status, maintenance trends, and monthly activity reports.',
-              },
+              { icon: <Monitor size={24} className="text-blue-600" />, bg: 'bg-blue-50', title: 'Computer Tracking', desc: 'Track every computer with full specs — brand, model, processor, RAM, storage, OS, and location.' },
+              { icon: <Users size={24} className="text-green-600" />, bg: 'bg-green-50', title: 'User Management', desc: 'Manage staff and student accounts with role-based access. Admins get full control, users get their own view.' },
+              { icon: <Shield size={24} className="text-purple-600" />, bg: 'bg-purple-50', title: 'Computer Assignments', desc: 'Assign computers to users, track assignment history, and mark returns with a single click.' },
+              { icon: <Wrench size={24} className="text-orange-600" />, bg: 'bg-orange-50', title: 'Maintenance Records', desc: 'Log maintenance issues, track repair status from Pending to Completed, and keep full history.' },
+              { icon: <MessageSquare size={24} className="text-teal-600" />, bg: 'bg-teal-50', title: 'Messaging System', desc: 'Built-in real-time messaging between users and administrators. Report problems directly.' },
+              { icon: <BarChart3 size={24} className="text-red-600" />, bg: 'bg-red-50', title: 'Reports & Analytics', desc: 'Visual charts for computer status, maintenance trends, and monthly activity reports.' },
             ].map(({ icon, bg, title, desc }) => (
               <div key={title} className="card p-6 hover:shadow-md transition-shadow">
-                <div className={`w-12 h-12 ${bg} rounded-xl flex items-center justify-center mb-4`}>
-                  {icon}
-                </div>
+                <div className={`w-12 h-12 ${bg} rounded-xl flex items-center justify-center mb-4`}>{icon}</div>
                 <h3 className="font-semibold text-slate-800 mb-2">{title}</h3>
                 <p className="text-sm text-slate-500 leading-relaxed">{desc}</p>
               </div>
@@ -139,9 +122,7 @@ export default function HomePage() {
               { step: '3', title: 'Stay Connected', desc: 'Report problems, send messages to admin, and track your history.' },
             ].map(({ step, title, desc }) => (
               <div key={step} className="text-center">
-                <div className="w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-4">
-                  {step}
-                </div>
+                <div className="w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-4">{step}</div>
                 <h3 className="font-semibold text-slate-800 mb-2">{title}</h3>
                 <p className="text-sm text-slate-500 leading-relaxed">{desc}</p>
               </div>
@@ -158,7 +139,6 @@ export default function HomePage() {
             <p className="text-slate-500 mt-3">Different views for admins and regular users</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Admin */}
             <div className="card p-6 border-2 border-blue-100">
               <div className="flex items-center gap-3 mb-5">
                 <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
@@ -170,24 +150,13 @@ export default function HomePage() {
                 </div>
               </div>
               <ul className="space-y-2">
-                {[
-                  'Manage all computers (add, edit, delete)',
-                  'Assign computers to users',
-                  'Manage maintenance records',
-                  'View and message all users',
-                  'View reports and analytics',
-                  'Manage user roles',
-                  'View all activity logs',
-                ].map(item => (
+                {['Manage all computers (add, edit, delete)', 'Assign computers to users', 'Manage maintenance records', 'View and message all users', 'View reports and analytics', 'Manage user roles', 'View all activity logs'].map(item => (
                   <li key={item} className="flex items-center gap-2 text-sm text-slate-600">
-                    <CheckCircle size={14} className="text-blue-500 shrink-0" />
-                    {item}
+                    <CheckCircle size={14} className="text-blue-500 shrink-0" />{item}
                   </li>
                 ))}
               </ul>
             </div>
-
-            {/* User */}
             <div className="card p-6 border-2 border-green-100">
               <div className="flex items-center gap-3 mb-5">
                 <div className="w-10 h-10 bg-green-600 rounded-xl flex items-center justify-center">
@@ -199,18 +168,9 @@ export default function HomePage() {
                 </div>
               </div>
               <ul className="space-y-2">
-                {[
-                  'Register and verify email with OTP',
-                  'View assigned computer details',
-                  'View assignment history',
-                  'Report computer problems',
-                  'Send messages to admin',
-                  'View personal activity history',
-                  'Receive replies from admin',
-                ].map(item => (
+                {['Register and verify email with OTP', 'View assigned computer details', 'View assignment history', 'Report computer problems', 'Send messages to admin', 'View personal activity history', 'Receive replies from admin'].map(item => (
                   <li key={item} className="flex items-center gap-2 text-sm text-slate-600">
-                    <CheckCircle size={14} className="text-green-500 shrink-0" />
-                    {item}
+                    <CheckCircle size={14} className="text-green-500 shrink-0" />{item}
                   </li>
                 ))}
               </ul>
