@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Message, Profile } from '@/types'
+import { Message } from '@/types'
 import { Send } from 'lucide-react'
 
 interface MessageBoardProps {
@@ -15,17 +15,15 @@ export default function MessageBoard({ currentUserId, otherUserId, otherUserName
   const [text, setText] = useState('')
   const [loading, setLoading] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
-  const supabase = createClient()
 
   async function fetchMessages() {
+    const supabase = createClient()
     const { data } = await supabase
       .from('messages')
       .select('*')
       .or(`and(sender_id.eq.${currentUserId},receiver_id.eq.${otherUserId}),and(sender_id.eq.${otherUserId},receiver_id.eq.${currentUserId})`)
       .order('created_at', { ascending: true })
     if (data) setMessages(data)
-
-    // Mark received messages as read
     await supabase
       .from('messages')
       .update({ status: 'read' })
@@ -36,8 +34,9 @@ export default function MessageBoard({ currentUserId, otherUserId, otherUserName
 
   useEffect(() => {
     fetchMessages()
+    const supabase = createClient()
     const channel = supabase
-      .channel('messages')
+      .channel('messages-' + otherUserId)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, fetchMessages)
       .subscribe()
     return () => { supabase.removeChannel(channel) }
@@ -51,12 +50,12 @@ export default function MessageBoard({ currentUserId, otherUserId, otherUserName
     e.preventDefault()
     if (!text.trim()) return
     setLoading(true)
+    const supabase = createClient()
     await supabase.from('messages').insert({
       sender_id: currentUserId,
       receiver_id: otherUserId,
       message: text.trim(),
     })
-    // Log activity
     await supabase.from('activity_logs').insert({
       user_id: currentUserId,
       action: 'Message Sent',

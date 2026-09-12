@@ -9,10 +9,10 @@ import { MessageSquare } from 'lucide-react'
 export default function MessagesPage() {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [admin, setAdmin] = useState<Profile | null>(null)
-  const supabase = createClient()
 
   useEffect(() => {
     async function load() {
+      const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
       const { data: p } = await supabase.from('profiles').select('*').eq('id', user.id).single()

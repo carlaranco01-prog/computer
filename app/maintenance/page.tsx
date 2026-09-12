@@ -16,38 +16,38 @@ export default function MaintenancePage() {
   const [loading, setLoading] = useState(false)
   const { toast, show, hide } = useToast()
   const [form, setForm] = useState({ computer_id: '', issue: '', description: '', maintenance_date: new Date().toISOString().split('T')[0] })
-  const supabase = createClient()
 
-  useEffect(() => {
-    async function load() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
-      const { data: p } = await supabase.from('profiles').select('*').eq('id', user.id).single()
-      setProfile(p)
-      const { data: assignment } = await supabase
-        .from('computer_assignments')
-        .select('computer_id, computers(id, computer_name, computer_code)')
-        .eq('user_id', user.id)
-        .eq('status', 'Active')
-        .single()
-      if (assignment?.computers) {
-        const c = assignment.computers as unknown as { id: string; computer_name: string; computer_code: string }
-        setComputers([c])
-        setForm(f => ({ ...f, computer_id: c.id }))
-      }
-      const { data: recs } = await supabase
-        .from('maintenance')
-        .select('*, computers(computer_name, computer_code)')
-        .order('created_at', { ascending: false })
-      setRecords(recs ?? [])
+  async function loadData() {
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+    const { data: p } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+    setProfile(p)
+    const { data: assignment } = await supabase
+      .from('computer_assignments')
+      .select('computer_id, computers(id, computer_name, computer_code)')
+      .eq('user_id', user.id)
+      .eq('status', 'Active')
+      .single()
+    if (assignment?.computers) {
+      const c = assignment.computers as unknown as { id: string; computer_name: string; computer_code: string }
+      setComputers([c])
+      setForm(f => ({ ...f, computer_id: c.id }))
     }
-    load()
-  }, [])
+    const { data: recs } = await supabase
+      .from('maintenance')
+      .select('*, computers(computer_name, computer_code)')
+      .order('created_at', { ascending: false })
+    setRecords(recs ?? [])
+  }
+
+  useEffect(() => { loadData() }, [])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!form.computer_id || !form.issue) { show('Please fill in required fields.', 'error'); return }
     setLoading(true)
+    const supabase = createClient()
     const { error } = await supabase.from('maintenance').insert(form)
     if (error) { show(error.message, 'error') }
     else {
@@ -56,8 +56,7 @@ export default function MaintenancePage() {
       show('Problem reported successfully!', 'success')
       setShowModal(false)
       setForm(f => ({ ...f, issue: '', description: '' }))
-      const { data: recs } = await supabase.from('maintenance').select('*, computers(computer_name, computer_code)').order('created_at', { ascending: false })
-      setRecords(recs ?? [])
+      loadData()
     }
     setLoading(false)
   }

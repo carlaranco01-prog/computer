@@ -47,7 +47,6 @@ export default function ComputerForm({ initial, onSuccess, onCancel }: ComputerF
     if (error) {
       show(error.message, 'error')
     } else {
-      // Log activity
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
         await supabase.from('activity_logs').insert({
