@@ -37,17 +37,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/', request.url))
   }
 
-  // Protect admin routes
-  if (user && pathname.startsWith('/admin')) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-    if (profile?.role !== 'admin') {
-      return NextResponse.redirect(new URL('/dashboard', request.url))
-    }
-  }
+  // NOTE: Admin route protection is handled inside each admin page
+  // We skip the DB query here to avoid middleware timeouts on edge runtime
 
   return supabaseResponse
 }
