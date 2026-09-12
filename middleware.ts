@@ -24,21 +24,22 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
 
   const { pathname } = request.nextUrl
-  const publicPaths = ['/login', '/register', '/verify-otp', '/forgot-password']
-  const isPublic = publicPaths.some(p => pathname.startsWith(p))
 
-  // Redirect unauthenticated users to login
+  // These paths are accessible without login
+  const publicPaths = ['/', '/login', '/register', '/verify-otp', '/forgot-password']
+  const isPublic = publicPaths.some(p => pathname === p || pathname.startsWith(p + '/'))
+
+  // Redirect unauthenticated users to login (except public pages)
   if (!user && !isPublic) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  // Redirect authenticated users away from auth pages
-  if (user && isPublic) {
+  // Redirect authenticated users away from auth pages (but NOT from homepage)
+  const authOnlyPaths = ['/login', '/register', '/verify-otp', '/forgot-password']
+  const isAuthPage = authOnlyPaths.some(p => pathname.startsWith(p))
+  if (user && isAuthPage) {
     return NextResponse.redirect(new URL('/', request.url))
   }
-
-  // NOTE: Admin route protection is handled inside each admin page
-  // We skip the DB query here to avoid middleware timeouts on edge runtime
 
   return supabaseResponse
 }
