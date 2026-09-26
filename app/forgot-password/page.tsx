@@ -67,11 +67,24 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-slate-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <div className="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <KeyRound size={28} className="text-white" />
+    <div className="min-h-screen flex" style={{ background: 'linear-gradient(160deg, #1e3a5f 0%, #1e40af 60%, #1d4ed8 100%)' }}>
+      {/* Left branding panel */}
+      <div className="hidden lg:flex flex-col justify-center px-16 flex-1 text-white">
+        <div className="flex items-center gap-3 mb-8">
+          <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center">
+            <KeyRound size={24} className="text-white" />
+          </div>
+          <span className="text-xl font-bold">CMS</span>
+        </div>
+        <h2 className="text-4xl font-bold leading-tight mb-4">Reset Your Password</h2>
+        <p className="text-blue-200 text-lg">Follow the steps to regain access to your account.</p>
+      </div>
+
+      {/* Right form panel */}
+      <div className="flex flex-col justify-center w-full lg:w-[480px] lg:min-h-screen bg-white lg:rounded-l-3xl p-8 lg:p-12">
+        <div className="mb-6">
+          <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center mb-5 lg:hidden">
+            <KeyRound size={22} className="text-white" />
           </div>
           <h1 className="text-2xl font-bold text-slate-800">Reset Password</h1>
           <p className="text-slate-500 text-sm mt-1">
@@ -81,66 +94,68 @@ export default function ForgotPasswordPage() {
           </p>
         </div>
 
-        <div className="card p-6">
-          {/* Step indicator */}
-          <div className="flex items-center gap-2 mb-6">
-            {(['email', 'otp', 'password'] as Step[]).map((s, i) => (
-              <div key={s} className="flex items-center gap-2 flex-1">
-                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${step === s || (i < ['email','otp','password'].indexOf(step)) ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-500'}`}>
-                  {i + 1}
-                </div>
-                {i < 2 && <div className={`flex-1 h-0.5 ${i < ['email','otp','password'].indexOf(step) ? 'bg-blue-600' : 'bg-slate-200'}`} />}
+        {/* Step indicator */}
+        <div className="flex items-center gap-2 mb-6">
+          {(['email', 'otp', 'password'] as Step[]).map((s, i) => (
+            <div key={s} className="flex items-center gap-2 flex-1">
+              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
+                step === s || i < ['email','otp','password'].indexOf(step)
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-slate-100 text-slate-400'
+              }`}>
+                {i + 1}
               </div>
-            ))}
-          </div>
-
-          {error && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm mb-4">{error}</div>}
-          {success && <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm mb-4">{success}</div>}
-
-          {step === 'email' && (
-            <form onSubmit={sendOTP} className="space-y-4">
-              <div>
-                <label className="label">Email Address</label>
-                <input className="input" type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} />
-              </div>
-              <button type="submit" className="btn-primary w-full py-2.5" disabled={loading}>
-                {loading ? 'Sending...' : 'Send Reset Code'}
-              </button>
-            </form>
-          )}
-
-          {step === 'otp' && (
-            <form onSubmit={verifyOTP} className="space-y-4">
-              <div>
-                <label className="label">OTP Code</label>
-                <input className="input text-center text-2xl tracking-widest font-mono" placeholder="000000" maxLength={6} value={otp} onChange={e => setOtp(e.target.value.replace(/\D/g, ''))} />
-              </div>
-              <button type="submit" className="btn-primary w-full py-2.5" disabled={loading}>
-                {loading ? 'Verifying...' : 'Verify Code'}
-              </button>
-            </form>
-          )}
-
-          {step === 'password' && (
-            <form onSubmit={updatePassword} className="space-y-4">
-              <div>
-                <label className="label">New Password</label>
-                <input className="input" type="password" placeholder="Min. 8 chars, 1 uppercase, 1 number" value={password} onChange={e => setPassword(e.target.value)} />
-              </div>
-              <div>
-                <label className="label">Confirm New Password</label>
-                <input className="input" type="password" placeholder="••••••••" value={confirm} onChange={e => setConfirm(e.target.value)} />
-              </div>
-              <button type="submit" className="btn-primary w-full py-2.5" disabled={loading}>
-                {loading ? 'Updating...' : 'Update Password'}
-              </button>
-            </form>
-          )}
-
-          <p className="text-center text-sm text-slate-500 mt-4">
-            <Link href="/login" className="text-blue-600 hover:underline">Back to Login</Link>
-          </p>
+              {i < 2 && <div className={`flex-1 h-0.5 ${i < ['email','otp','password'].indexOf(step) ? 'bg-blue-600' : 'bg-slate-200'}`} />}
+            </div>
+          ))}
         </div>
+
+        {error && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm mb-4">{error}</div>}
+        {success && <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-xl text-sm mb-4">{success}</div>}
+
+        {step === 'email' && (
+          <form onSubmit={sendOTP} className="space-y-4">
+            <div>
+              <label className="label">Email Address</label>
+              <input className="input" type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} />
+            </div>
+            <button type="submit" className="btn-primary w-full py-3" disabled={loading}>
+              {loading ? 'Sending...' : 'Send Reset Code'}
+            </button>
+          </form>
+        )}
+
+        {step === 'otp' && (
+          <form onSubmit={verifyOTP} className="space-y-4">
+            <div>
+              <label className="label">OTP Code</label>
+              <input className="input text-center text-2xl tracking-widest font-mono" placeholder="000000" maxLength={6} value={otp} onChange={e => setOtp(e.target.value.replace(/\D/g, ''))} />
+            </div>
+            <button type="submit" className="btn-primary w-full py-3" disabled={loading}>
+              {loading ? 'Verifying...' : 'Verify Code'}
+            </button>
+          </form>
+        )}
+
+        {step === 'password' && (
+          <form onSubmit={updatePassword} className="space-y-4">
+            <div>
+              <label className="label">New Password</label>
+              <input className="input" type="password" placeholder="Min. 8 chars, 1 uppercase, 1 number" value={password} onChange={e => setPassword(e.target.value)} />
+            </div>
+            <div>
+              <label className="label">Confirm New Password</label>
+              <input className="input" type="password" placeholder="••••••••" value={confirm} onChange={e => setConfirm(e.target.value)} />
+            </div>
+            <button type="submit" className="btn-primary w-full py-3" disabled={loading}>
+              {loading ? 'Updating...' : 'Update Password'}
+            </button>
+          </form>
+        )}
+
+        <p className="text-center text-sm text-slate-500 mt-6">
+          <Link href="/login" className="text-blue-600 hover:underline font-semibold">Back to Login</Link>
+        </p>
       </div>
     </div>
   )

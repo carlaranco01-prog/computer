@@ -12,9 +12,10 @@ export default async function HomePage() {
       .from('profiles')
       .select('role')
       .eq('id', user.id)
-      .single()
+      .maybeSingle()
     if (profile?.role === 'admin') redirect('/admin/dashboard')
-    else redirect('/dashboard')
+    else if (profile?.role === 'user') redirect('/dashboard')
+    // if no profile yet, fall through to show homepage
   }
 
   return (

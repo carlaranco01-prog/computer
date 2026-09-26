@@ -1,5 +1,6 @@
 import { requireAuth, getUserProfile } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
 import AppShell from '@/components/AppShell'
 import DashboardCard from '@/components/DashboardCard'
 import { StatusBadge } from '@/components/Badges'
@@ -9,6 +10,7 @@ import Link from 'next/link'
 export default async function DashboardPage() {
   await requireAuth()
   const profile = await getUserProfile()
+  if (!profile) redirect('/login')
   const supabase = await createClient()
 
   const [{ data: assignment }, { data: messages }, { data: logs }] = await Promise.all([

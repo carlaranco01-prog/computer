@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, Monitor, Users, Wrench, MessageSquare,
-  ClipboardList, BarChart3, LogOut, Settings, BookOpen
+  ClipboardList, BarChart3, LogOut, BookOpen
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
@@ -46,48 +46,56 @@ export default function Sidebar({ role, userName }: SidebarProps) {
   }
 
   return (
-    <aside className="w-64 min-h-screen bg-white border-r border-slate-200 flex flex-col">
-      <div className="p-5 border-b border-slate-200">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-            <Monitor size={16} className="text-white" />
+    <aside className="w-64 min-h-screen flex flex-col" style={{ background: 'linear-gradient(160deg, #1e3a5f 0%, #1e40af 60%, #1d4ed8 100%)' }}>
+      {/* Logo */}
+      <div className="p-5 pb-4">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center">
+            <Monitor size={18} className="text-white" />
           </div>
           <div>
-            <p className="text-sm font-bold text-slate-800">CMS</p>
-            <p className="text-xs text-slate-400">Computer Management</p>
+            <p className="text-sm font-bold text-white">CMS</p>
+            <p className="text-xs text-blue-200">Computer Management</p>
           </div>
         </div>
       </div>
 
-      <div className="p-3 border-b border-slate-100">
-        <div className="flex items-center gap-2 px-2 py-1.5">
-          <div className="w-7 h-7 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 text-xs font-bold">
+      {/* User profile */}
+      <div className="mx-3 mb-4 p-3 bg-white/10 rounded-2xl backdrop-blur-sm">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 bg-white/20 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0">
             {userName.charAt(0).toUpperCase()}
           </div>
           <div className="min-w-0">
-            <p className="text-xs font-semibold text-slate-700 truncate">{userName}</p>
-            <p className="text-xs text-slate-400 capitalize">{role}</p>
+            <p className="text-sm font-semibold text-white truncate">{userName}</p>
+            <p className="text-xs text-blue-200 capitalize">{role}</p>
           </div>
         </div>
       </div>
 
-      <nav className="flex-1 p-3 space-y-0.5">
-        {links.map(({ href, label, icon: Icon }) => (
-          <Link
-            key={href}
-            href={href}
-            className={`sidebar-link ${pathname === href || pathname.startsWith(href + '/') ? 'active' : 'text-slate-600'}`}
-          >
-            <Icon size={17} />
-            {label}
-          </Link>
-        ))}
+      {/* Nav links */}
+      <nav className="flex-1 px-3 space-y-0.5">
+        <p className="text-xs font-bold text-blue-300 uppercase tracking-widest px-3 mb-2">Menu</p>
+        {links.map(({ href, label, icon: Icon }) => {
+          const isActive = pathname === href || pathname.startsWith(href + '/')
+          return (
+            <Link
+              key={href}
+              href={href}
+              className={`sidebar-link ${isActive ? 'active' : 'text-blue-100'}`}
+            >
+              <Icon size={17} />
+              {label}
+            </Link>
+          )
+        })}
       </nav>
 
-      <div className="p-3 border-t border-slate-200 space-y-0.5">
+      {/* Logout */}
+      <div className="p-3 border-t border-white/10">
         <button
           onClick={handleLogout}
-          className="sidebar-link text-slate-600 w-full text-left hover:bg-red-50 hover:text-red-600"
+          className="sidebar-link text-blue-200 hover:text-white hover:bg-red-500/30 w-full text-left"
         >
           <LogOut size={17} />
           Logout
