@@ -1,149 +1,174 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { Monitor, Shield, Wrench, MessageSquare, BarChart3, Users, CheckCircle, ArrowRight } from 'lucide-react'
+import { Monitor, Shield, Wrench, MessageSquare, BarChart3, Users, CheckCircle, ArrowRight, Zap } from 'lucide-react'
+
+const features = [
+  { icon: Monitor,      color: 'text-indigo-600', bg: 'bg-indigo-50', title: 'Computer Tracking',   desc: 'Track every device with full specs — brand, model, RAM, storage, OS, and location.', href: '/admin/computers' },
+  { icon: Users,        color: 'text-violet-600', bg: 'bg-violet-50', title: 'User Management',     desc: 'Role-based access for admins and users. Everyone sees exactly what they need.',       href: '/admin/users' },
+  { icon: Shield,       color: 'text-sky-600',    bg: 'bg-sky-50',    title: 'Assignments',         desc: 'Assign computers to users, track history, and manage returns effortlessly.',           href: '/admin/assignments' },
+  { icon: Wrench,       color: 'text-amber-600',  bg: 'bg-amber-50',  title: 'Maintenance',         desc: 'Log issues, track repair status from Pending to Completed, keep full records.',        href: '/admin/maintenance' },
+  { icon: MessageSquare,color: 'text-emerald-600',bg: 'bg-emerald-50',title: 'Messaging',           desc: 'Built-in messaging between users and admins. Report problems directly.',               href: '/messages' },
+  { icon: BarChart3,    color: 'text-rose-600',   bg: 'bg-rose-50',   title: 'Reports & Analytics', desc: 'Visual charts for computer status, maintenance trends, and activity.',                 href: '/admin/reports' },
+]
+
+const steps = [
+  { n: '1', title: 'Create Account',  desc: 'Register with your email and verify with a one-time code.' },
+  { n: '2', title: 'Get Assigned',    desc: 'Admin assigns a computer to you. View full specs on your dashboard.' },
+  { n: '3', title: 'Stay Connected',  desc: 'Report problems, message admin, and track your activity history.' },
+]
 
 export default async function HomePage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (user) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .maybeSingle()
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle()
     if (profile?.role === 'admin') redirect('/admin/dashboard')
+    else if (profile?.role === 'staff') redirect('/staff/dashboard')
     else if (profile?.role === 'user') redirect('/dashboard')
-    // if no profile yet, fall through to show homepage
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Navbar */}
-      <nav className="border-b border-slate-200 bg-white sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <Monitor size={16} className="text-white" />
+    <div className="min-h-screen bg-white" style={{ fontFamily: "var(--font-inter), 'Inter', sans-serif" }}>
+
+      {/* ── Navbar ── */}
+      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200/80">
+        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #4f46e5, #7c3aed)' }}>
+              <Monitor size={15} className="text-white" />
             </div>
-            <span className="font-bold text-slate-800">CMS</span>
-            <span className="text-slate-400 text-sm hidden sm:block">Computer Management System</span>
+            <span className="font-bold text-slate-800 tracking-tight">CMS</span>
+            <span className="hidden sm:block text-slate-300 text-sm">·</span>
+            <span className="hidden sm:block text-slate-400 text-sm">Computer Management </span>
           </div>
-          <div className="flex items-center gap-3">
-            <Link href="/login" className="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors">
+          <div className="flex items-center gap-2">
+            <Link href="/login" className="text-sm font-semibold text-slate-500 hover:text-indigo-600 px-4 py-2 rounded-xl transition-colors">
               Sign In
             </Link>
             <Link href="/register" className="btn-primary text-sm">
-              Get Started
+              Get Started <ArrowRight size={14} />
             </Link>
           </div>
         </div>
       </nav>
 
-      {/* Hero */}
-      <section className="bg-gradient-to-br from-blue-600 via-blue-700 to-slate-800 text-white py-24 px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 bg-blue-500/30 border border-blue-400/40 rounded-full px-4 py-1.5 text-sm mb-6">
-            <CheckCircle size={14} />
-            Fully featured computer management
+      {/* ── Hero ── */}
+      <section className="relative overflow-hidden py-20 px-6" style={{ background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%)' }}>
+        <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)', backgroundSize: '32px 32px' }} />
+        <div className="relative max-w-6xl mx-auto flex flex-col lg:flex-row items-center gap-12">
+          {/* text */}
+          <div className="flex-1 text-center lg:text-left">
+            <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-1.5 text-sm text-indigo-200 mb-8">
+              <Zap size={13} className="text-indigo-300" />
+              Fully featured · Free to use
+            </div>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight tracking-tight mb-6">
+              Manage your computers<br />
+              <span className="text-indigo-300">smarter & faster.</span>
+            </h1>
+            <p className="text-indigo-200 text-lg max-w-xl mb-10 leading-relaxed">
+              Track assets, assign devices, handle maintenance, and communicate — all from one clean dashboard.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
+              <Link href="/register" className="inline-flex items-center justify-center gap-2 bg-white text-indigo-700 hover:bg-indigo-50 font-bold px-8 py-3.5 rounded-2xl transition-colors shadow-lg shadow-indigo-900/30">
+                Create Free Account <ArrowRight size={16} />
+              </Link>
+              <Link href="/login" className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold px-8 py-3.5 rounded-2xl transition-colors">
+                Sign In
+              </Link>
+            </div>
           </div>
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight mb-6">
-            Manage Your Computers
-            <span className="block text-blue-300 mt-2">Smarter & Faster</span>
-          </h1>
-          <p className="text-blue-100 text-lg sm:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
-            A complete system to track computers, manage assignments, handle maintenance, and communicate — all in one place.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/register" className="bg-white text-blue-600 hover:bg-blue-50 font-semibold px-8 py-3 rounded-lg transition-colors flex items-center justify-center gap-2">
-              Create Account <ArrowRight size={18} />
-            </Link>
-            <Link href="/login" className="border border-blue-400 hover:bg-blue-600 text-white font-semibold px-8 py-3 rounded-lg transition-colors">
-              Sign In
-            </Link>
+          {/* hero image */}
+          <div className="flex-1 w-full max-w-lg lg:max-w-none">
+            <div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-2xl shadow-indigo-900/50 bg-white/5">
+              <div className="flex flex-col items-center justify-center gap-3 text-white/30 py-20">
+                <Monitor size={64} />
+                <span className="text-sm">Computer Management System</span>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Stats */}
-      <section className="bg-slate-50 border-y border-slate-200 py-12 px-4">
-        <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+      {/* ── Stats bar ── */}
+      <section className="border-b border-slate-100 bg-slate-50">
+        <div className="max-w-4xl mx-auto px-6 py-10 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
           {[
             { value: '100%', label: 'Web Based' },
-            { value: 'Real-time', label: 'Updates' },
-            { value: 'Role-based', label: 'Access Control' },
+            { value: 'OTP',  label: 'Secure Login' },
+            { value: '2',    label: 'User Roles' },
             { value: 'Free', label: 'To Use' },
           ].map(({ value, label }) => (
             <div key={label}>
-              <p className="text-2xl font-bold text-blue-600">{value}</p>
-              <p className="text-sm text-slate-500 mt-1">{label}</p>
+              <p className="text-2xl font-extrabold text-indigo-600">{value}</p>
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mt-1">{label}</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Features */}
-      <section className="py-20 px-4">
+      {/* ── Features ── */}
+      <section className="py-24 px-6">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-14">
-            <h2 className="text-3xl font-bold text-slate-800">Everything You Need</h2>
-            <p className="text-slate-500 mt-3 max-w-xl mx-auto">All the tools to manage your computer lab or office equipment in one system.</p>
+          <div className="text-center mb-16">
+            <p className="text-xs font-bold text-indigo-500 uppercase tracking-widest mb-3">Features</p>
+            <h2 className="text-3xl font-extrabold text-slate-800 tracking-tight">Everything you need</h2>
+            <p className="text-slate-400 mt-3 max-w-md mx-auto text-sm">All the tools to manage your computer lab or office equipment in one place.</p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              { icon: <Monitor size={24} className="text-blue-600" />, bg: 'bg-blue-50', title: 'Computer Tracking', desc: 'Track every computer with full specs — brand, model, processor, RAM, storage, OS, and location.' },
-              { icon: <Users size={24} className="text-green-600" />, bg: 'bg-green-50', title: 'User Management', desc: 'Manage staff and student accounts with role-based access. Admins get full control, users get their own view.' },
-              { icon: <Shield size={24} className="text-purple-600" />, bg: 'bg-purple-50', title: 'Computer Assignments', desc: 'Assign computers to users, track assignment history, and mark returns with a single click.' },
-              { icon: <Wrench size={24} className="text-orange-600" />, bg: 'bg-orange-50', title: 'Maintenance Records', desc: 'Log maintenance issues, track repair status from Pending to Completed, and keep full history.' },
-              { icon: <MessageSquare size={24} className="text-teal-600" />, bg: 'bg-teal-50', title: 'Messaging System', desc: 'Built-in real-time messaging between users and administrators. Report problems directly.' },
-              { icon: <BarChart3 size={24} className="text-red-600" />, bg: 'bg-red-50', title: 'Reports & Analytics', desc: 'Visual charts for computer status, maintenance trends, and monthly activity reports.' },
-            ].map(({ icon, bg, title, desc }) => (
-              <div key={title} className="card p-6 hover:shadow-md transition-shadow">
-                <div className={`w-12 h-12 ${bg} rounded-xl flex items-center justify-center mb-4`}>{icon}</div>
-                <h3 className="font-semibold text-slate-800 mb-2">{title}</h3>
-                <p className="text-sm text-slate-500 leading-relaxed">{desc}</p>
-              </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {features.map(({ icon: Icon, color, bg, title, desc, href, img }) => (
+              <Link key={title} href={href} className="group relative overflow-hidden rounded-2xl border border-slate-100 hover:border-indigo-200 hover:shadow-lg transition-all duration-200 bg-white block p-5">
+                <div className={`w-10 h-10 ${bg} rounded-xl flex items-center justify-center mb-3`}>
+                  <Icon size={18} className={color} />
+                </div>
+                <p className="font-bold text-slate-800 mb-1.5 group-hover:text-indigo-600 transition-colors">{title}</p>
+                <p className="text-sm text-slate-400 leading-relaxed">{desc}</p>
+                <span className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-500 mt-3">
+                  Open <ArrowRight size={11} />
+                </span>
+              </Link>
             ))}
           </div>
         </div>
       </section>
 
-      {/* How it works */}
-      <section className="bg-slate-50 py-20 px-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-14">
-            <h2 className="text-3xl font-bold text-slate-800">How It Works</h2>
-            <p className="text-slate-500 mt-3">Get started in minutes</p>
+      {/* ── How it works ── */}
+      <section className="py-24 px-6 bg-slate-50">
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center mb-16">
+            <p className="text-xs font-bold text-indigo-500 uppercase tracking-widest mb-3">How It Works</p>
+            <h2 className="text-3xl font-extrabold text-slate-800 tracking-tight">Get started in minutes</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              { step: '1', title: 'Create Account', desc: 'Register with your email and verify with OTP sent to your inbox.' },
-              { step: '2', title: 'Get Assigned', desc: 'Admin assigns a computer to you. View full specs on your dashboard.' },
-              { step: '3', title: 'Stay Connected', desc: 'Report problems, send messages to admin, and track your history.' },
-            ].map(({ step, title, desc }) => (
-              <div key={step} className="text-center">
-                <div className="w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-4">{step}</div>
-                <h3 className="font-semibold text-slate-800 mb-2">{title}</h3>
-                <p className="text-sm text-slate-500 leading-relaxed">{desc}</p>
+            {steps.map(({ n, title, desc }) => (
+              <div key={n} className="text-center">
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-lg font-extrabold text-white mx-auto mb-4 shadow-lg shadow-indigo-200" style={{ background: 'linear-gradient(135deg, #4f46e5, #7c3aed)' }}>
+                  {n}
+                </div>
+                <p className="font-bold text-slate-800 mb-1.5">{title}</p>
+                <p className="text-sm text-slate-400 leading-relaxed">{desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Roles */}
-      <section className="py-20 px-4">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-14">
-            <h2 className="text-3xl font-bold text-slate-800">Two Roles, One System</h2>
-            <p className="text-slate-500 mt-3">Different views for admins and regular users</p>
+      {/* ── Roles ── */}
+      <section className="py-24 px-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-16">
+            <p className="text-xs font-bold text-indigo-500 uppercase tracking-widest mb-3">Access Control</p>
+            <h2 className="text-3xl font-extrabold text-slate-800 tracking-tight">Two roles, one system</h2>
+            <p className="text-slate-400 mt-3 text-sm">Different views tailored for admins and regular users.</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="card p-6 border-2 border-blue-100">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Admin */}
+            <div className="rounded-2xl p-6 border-2 border-indigo-100 bg-indigo-50/40">
               <div className="flex items-center gap-3 mb-5">
-                <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
-                  <Shield size={20} className="text-white" />
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #4f46e5, #7c3aed)' }}>
+                  <Shield size={18} className="text-white" />
                 </div>
                 <div>
                   <p className="font-bold text-slate-800">Administrator</p>
@@ -151,17 +176,18 @@ export default async function HomePage() {
                 </div>
               </div>
               <ul className="space-y-2">
-                {['Manage all computers (add, edit, delete)', 'Assign computers to users', 'Manage maintenance records', 'View and message all users', 'View reports and analytics', 'Manage user roles', 'View all activity logs'].map(item => (
+                {['Manage all computers', 'Assign computers to users', 'Handle maintenance records', 'Message all users', 'View reports & analytics', 'Manage user roles & access'].map(item => (
                   <li key={item} className="flex items-center gap-2 text-sm text-slate-600">
-                    <CheckCircle size={14} className="text-blue-500 shrink-0" />{item}
+                    <CheckCircle size={14} className="text-indigo-500 shrink-0" />{item}
                   </li>
                 ))}
               </ul>
             </div>
-            <div className="card p-6 border-2 border-green-100">
+            {/* User */}
+            <div className="rounded-2xl p-6 border-2 border-emerald-100 bg-emerald-50/40">
               <div className="flex items-center gap-3 mb-5">
-                <div className="w-10 h-10 bg-green-600 rounded-xl flex items-center justify-center">
-                  <Users size={20} className="text-white" />
+                <div className="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center">
+                  <Users size={18} className="text-white" />
                 </div>
                 <div>
                   <p className="font-bold text-slate-800">Regular User</p>
@@ -169,9 +195,9 @@ export default async function HomePage() {
                 </div>
               </div>
               <ul className="space-y-2">
-                {['Register and verify email with OTP', 'View assigned computer details', 'View assignment history', 'Report computer problems', 'Send messages to admin', 'View personal activity history', 'Receive replies from admin'].map(item => (
+                {['Register & verify via OTP', 'View assigned computer details', 'Submit maintenance requests', 'Message the administrator', 'View personal activity history', 'Receive admin replies'].map(item => (
                   <li key={item} className="flex items-center gap-2 text-sm text-slate-600">
-                    <CheckCircle size={14} className="text-green-500 shrink-0" />{item}
+                    <CheckCircle size={14} className="text-emerald-500 shrink-0" />{item}
                   </li>
                 ))}
               </ul>
@@ -180,38 +206,19 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="bg-gradient-to-r from-blue-600 to-slate-700 text-white py-20 px-4">
-        <div className="max-w-2xl mx-auto text-center">
-          <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
-          <p className="text-blue-100 mb-8 text-lg">Create your account now and start managing your computers efficiently.</p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/register" className="bg-white text-blue-600 hover:bg-blue-50 font-semibold px-8 py-3 rounded-lg transition-colors flex items-center justify-center gap-2">
-              Create Account <ArrowRight size={18} />
-            </Link>
-            <Link href="/login" className="border border-blue-300 hover:bg-blue-600 text-white font-semibold px-8 py-3 rounded-lg transition-colors">
-              Sign In
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="bg-slate-900 text-slate-400 py-8 px-4">
+      {/* ── Footer ── */}
+      <footer className="bg-slate-950 py-8 px-6">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-blue-600 rounded flex items-center justify-center">
-              <Monitor size={12} className="text-white" />
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #4f46e5, #7c3aed)' }}>
+              <Monitor size={13} className="text-white" />
             </div>
-            <span className="text-sm font-medium text-slate-300">Computer Management System</span>
+            <span className="text-sm font-semibold text-slate-300">Computer Management System</span>
           </div>
-          <p className="text-xs">Built with Next.js, Supabase & Tailwind CSS</p>
-          <div className="flex gap-4 text-sm">
-            <Link href="/login" className="hover:text-white transition-colors">Login</Link>
-            <Link href="/register" className="hover:text-white transition-colors">Register</Link>
-          </div>
+          <p className="text-xs text-slate-500">Built with Next.js · Supabase · Tailwind CSS</p>
         </div>
       </footer>
+
     </div>
   )
 }

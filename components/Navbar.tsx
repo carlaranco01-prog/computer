@@ -1,35 +1,29 @@
 'use client'
-import { Menu, Bell } from 'lucide-react'
+import { Menu } from 'lucide-react'
 
 interface NavbarProps {
   title: string
   onMenuClick?: () => void
-  unreadCount?: number
 }
 
-export default function Navbar({ title, onMenuClick, unreadCount = 0 }: NavbarProps) {
+export default function Navbar({ title, onMenuClick }: NavbarProps) {
+  const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
+
   return (
-    <header className="h-16 bg-white border-b border-slate-100 flex items-center justify-between px-6 sticky top-0 z-30 shadow-sm">
+    <header className="h-14 bg-white/80 backdrop-blur-md border-b border-slate-200/80 flex items-center px-5 sticky top-0 z-30 shadow-[0_1px_8px_rgba(79,70,229,0.06)]">
       <div className="flex items-center gap-3">
         {onMenuClick && (
-          <button onClick={onMenuClick} className="p-2 hover:bg-slate-100 rounded-xl lg:hidden transition-colors">
-            <Menu size={20} className="text-slate-600" />
+          <button
+            onClick={onMenuClick}
+            className="p-2 hover:bg-indigo-50 rounded-xl lg:hidden transition-colors text-slate-500 hover:text-indigo-600"
+          >
+            <Menu size={18} />
           </button>
         )}
         <div>
-          <h1 className="text-base font-bold text-slate-800">{title}</h1>
-          <p className="text-xs text-slate-400 hidden sm:block">{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
+          <h1 className="text-sm font-bold text-slate-800 leading-tight">{title}</h1>
+          <p className="text-[11px] text-slate-400 hidden sm:block leading-tight">{today}</p>
         </div>
-      </div>
-      <div className="flex items-center gap-2">
-        <button className="relative p-2 hover:bg-slate-100 rounded-xl transition-colors">
-          <Bell size={19} className="text-slate-500" />
-          {unreadCount > 0 && (
-            <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
-              {unreadCount > 9 ? '9+' : unreadCount}
-            </span>
-          )}
-        </button>
       </div>
     </header>
   )

@@ -19,7 +19,7 @@ export default function AdminMessagesPage() {
       if (!user) return
       const { data: p } = await supabase.from('profiles').select('*').eq('id', user.id).single()
       setProfile(p)
-      const { data: u } = await supabase.from('profiles').select('*').eq('role', 'user').order('full_name')
+      const { data: u } = await supabase.from('profiles').select('*').in('role', ['user', 'staff']).order('full_name')
       setUsers(u ?? [])
       const { data: msgs } = await supabase.from('messages').select('sender_id').eq('receiver_id', user.id).eq('status', 'unread')
       const counts: Record<string, number> = {}
@@ -92,3 +92,5 @@ export default function AdminMessagesPage() {
     </AppShell>
   )
 }
+
+

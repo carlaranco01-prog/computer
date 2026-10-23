@@ -37,26 +37,27 @@ export default async function DashboardPage() {
 
   return (
     <AppShell role="user" userName={profile!.full_name} title="Dashboard" unreadCount={messages?.length ?? 0}>
-      <div className="space-y-6">
+      <div className="space-y-4">
         {/* Welcome */}
-        <div className="card p-5 bg-gradient-to-r from-blue-600 to-blue-700 text-white border-0">
-          <h2 className="text-xl font-bold">Welcome back, {profile!.full_name}! 👋</h2>
-          <p className="text-blue-100 text-sm mt-1">{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+        <div className="rounded-2xl px-6 py-5 text-white border-0" style={{ background: 'linear-gradient(135deg, #312e81 0%, #4f46e5 100%)' }}>
+          <p className="text-xs font-semibold text-indigo-300 uppercase tracking-widest mb-1">My Dashboard</p>
+          <h2 className="text-lg font-extrabold">Welcome back, {profile!.full_name}! 👋</h2>
+          <p className="text-indigo-200 text-xs mt-0.5">{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <DashboardCard title="Assigned Computer" value={assignment ? '1' : '0'} icon={<Monitor size={22} className="text-blue-600" />} color="bg-blue-50" />
-          <DashboardCard title="Unread Messages" value={messages?.length ?? 0} icon={<MessageSquare size={22} className="text-green-600" />} color="bg-green-50" />
-          <DashboardCard title="Activities" value={logs?.length ?? 0} icon={<ClipboardList size={22} className="text-purple-600" />} color="bg-purple-50" />
-          <DashboardCard title="Report Problem" value="→" icon={<AlertTriangle size={22} className="text-orange-600" />} color="bg-orange-50" subtitle="Click to report" />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <DashboardCard title="Assigned Computer" value={assignment ? '1' : '0'} icon={<Monitor size={20} className="text-indigo-600" />} color="stat-indigo" />
+          <DashboardCard title="Unread Messages" value={messages?.length ?? 0} icon={<MessageSquare size={20} className="text-emerald-600" />} color="stat-emerald" />
+          <DashboardCard title="Activities" value={logs?.length ?? 0} icon={<ClipboardList size={20} className="text-violet-600" />} color="stat-violet" />
+          <DashboardCard title="Report Problem" value="→" icon={<AlertTriangle size={20} className="text-orange-600" />} color="stat-orange" subtitle="Click to report" />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Assigned Computer */}
-          <div className="card p-5">
-            <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2">
-              <Monitor size={18} className="text-blue-600" /> My Assigned Computer
+          <div className="card p-4">
+            <h3 className="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
+              <Monitor size={15} className="text-blue-600" /> My Assigned Computer
             </h3>
             {assignment?.computers ? (
               <div className="space-y-3">
@@ -99,15 +100,15 @@ export default async function DashboardPage() {
           </div>
 
           {/* Recent Activity */}
-          <div className="card p-5">
-            <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2">
-              <ClipboardList size={18} className="text-purple-600" /> Recent Activity
+          <div className="card p-4">
+            <h3 className="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
+              <ClipboardList size={15} className="text-purple-600" /> Recent Activity
             </h3>
             {logs && logs.length > 0 ? (
               <div className="space-y-3">
                 {logs.map(log => (
                   <div key={log.id} className="flex items-start gap-3">
-                    <div className="w-2 h-2 bg-blue-400 rounded-full mt-1.5 shrink-0" />
+                    <div className="w-2 h-2 bg-indigo-400 rounded-full mt-1.5 shrink-0" />
                     <div>
                       <p className="text-sm font-medium text-slate-700">{log.action}</p>
                       <p className="text-xs text-slate-400">{log.description}</p>
@@ -126,3 +127,5 @@ export default async function DashboardPage() {
     </AppShell>
   )
 }
+
+

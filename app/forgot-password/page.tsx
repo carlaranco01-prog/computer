@@ -7,10 +7,19 @@ import { KeyRound } from 'lucide-react'
 
 type Step = 'email' | 'otp' | 'password'
 
+const PW_RULES = {
+  minLength: 8,
+  messages: {
+    short:     'Must be at least 8 characters.',
+    uppercase: 'Must contain an uppercase letter.',
+    number:    'Must contain a number.',
+  },
+}
+
 function validatePassword(p: string) {
-  if (p.length < 8) return 'Password must be at least 8 characters.'
-  if (!/[A-Z]/.test(p)) return 'Password must contain an uppercase letter.'
-  if (!/[0-9]/.test(p)) return 'Password must contain a number.'
+  if (p.length < PW_RULES.minLength) return PW_RULES.messages.short
+  if (!/[A-Z]/.test(p)) return PW_RULES.messages.uppercase
+  if (!/[0-9]/.test(p)) return PW_RULES.messages.number
   return ''
 }
 

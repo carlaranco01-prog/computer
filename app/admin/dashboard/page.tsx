@@ -33,41 +33,42 @@ export default async function AdminDashboardPage() {
   ])
 
   const stats = [
-    { title: 'Total Computers', value: totalComputers ?? 0, icon: <Monitor size={22} className="text-blue-600" />, color: 'bg-blue-50' },
-    { title: 'Available', value: availableComputers ?? 0, icon: <CheckCircle size={22} className="text-green-600" />, color: 'bg-green-50' },
-    { title: 'Assigned', value: assignedComputers ?? 0, icon: <Monitor size={22} className="text-purple-600" />, color: 'bg-purple-50' },
-    { title: 'Under Maintenance', value: maintenanceComputers ?? 0, icon: <Wrench size={22} className="text-yellow-600" />, color: 'bg-yellow-50' },
-    { title: 'Damaged', value: damagedComputers ?? 0, icon: <XCircle size={22} className="text-red-600" />, color: 'bg-red-50' },
-    { title: 'Total Users', value: totalUsers ?? 0, icon: <Users size={22} className="text-indigo-600" />, color: 'bg-indigo-50' },
-    { title: 'Pending Maintenance', value: pendingMaintenance ?? 0, icon: <Clock size={22} className="text-orange-600" />, color: 'bg-orange-50' },
-    { title: 'Reports', value: '→', icon: <BarChart3 size={22} className="text-teal-600" />, color: 'bg-teal-50', subtitle: 'View analytics' },
+    { title: 'Total Computers',    value: totalComputers ?? 0,    icon: <Monitor size={20} className="text-indigo-600" />,  color: 'stat-indigo' },
+    { title: 'Available',          value: availableComputers ?? 0, icon: <CheckCircle size={20} className="text-emerald-600" />, color: 'stat-emerald' },
+    { title: 'Assigned',           value: assignedComputers ?? 0,  icon: <Monitor size={20} className="text-violet-600" />,  color: 'stat-violet' },
+    { title: 'Under Maintenance',  value: maintenanceComputers ?? 0, icon: <Wrench size={20} className="text-amber-600" />,  color: 'stat-amber' },
+    { title: 'Damaged',            value: damagedComputers ?? 0,   icon: <XCircle size={20} className="text-red-600" />,    color: 'stat-red' },
+    { title: 'Total Users',        value: totalUsers ?? 0,         icon: <Users size={20} className="text-sky-600" />,      color: 'stat-sky' },
+    { title: 'Pending Maintenance',value: pendingMaintenance ?? 0, icon: <Clock size={20} className="text-orange-600" />,   color: 'stat-orange' },
+    { title: 'Reports',            value: '→',                     icon: <BarChart3 size={20} className="text-teal-600" />, color: 'stat-teal', subtitle: 'View analytics' },
   ]
 
   return (
-    <AppShell role="admin" userName={profile!.full_name} title="Admin Dashboard">
-      <div className="space-y-6">
+    <AppShell role="admin" userName={profile!.full_name} title="Admin Dashboard" profile={profile!}>
+      <div className="space-y-4">
         {/* Welcome */}
-        <div className="card p-5 bg-gradient-to-r from-slate-800 to-slate-700 text-white border-0">
-          <h2 className="text-xl font-bold">Admin Dashboard</h2>
-          <p className="text-slate-300 text-sm mt-1">Welcome back, {profile!.full_name} · {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+        <div className="rounded-2xl px-6 py-5 text-white border-0" style={{ background: 'linear-gradient(135deg, #1e1b4b 0%, #4338ca 100%)' }}>
+          <p className="text-xs font-semibold text-indigo-300 uppercase tracking-widest mb-1">Admin Dashboard</p>
+          <h2 className="text-lg font-extrabold">Welcome back, {profile!.full_name}! 👋</h2>
+          <p className="text-indigo-200 text-xs mt-0.5">{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {stats.map(s => (
             <DashboardCard key={s.title} title={s.title} value={s.value} icon={s.icon} color={s.color} subtitle={(s as any).subtitle} />
           ))}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Recent Activity */}
-          <div className="card p-5">
-            <h3 className="font-semibold text-slate-800 mb-4">Recent Activity</h3>
+          <div className="card p-4">
+            <h3 className="text-sm font-bold text-slate-800 mb-3">Recent Activity</h3>
             {recentLogs && recentLogs.length > 0 ? (
               <div className="space-y-3">
                 {recentLogs.map(log => (
                   <div key={log.id} className="flex items-start gap-3">
-                    <div className="w-2 h-2 bg-blue-400 rounded-full mt-1.5 shrink-0" />
+                    <div className="w-2 h-2 bg-indigo-400 rounded-full mt-1.5 shrink-0" />
                     <div className="min-w-0">
                       <p className="text-sm font-medium text-slate-700 truncate">{(log as any).profiles?.full_name} — {log.action}</p>
                       <p className="text-xs text-slate-400">{new Date(log.created_at).toLocaleString()}</p>
@@ -81,8 +82,8 @@ export default async function AdminDashboardPage() {
           </div>
 
           {/* Recent Maintenance */}
-          <div className="card p-5">
-            <h3 className="font-semibold text-slate-800 mb-4">Recent Maintenance</h3>
+          <div className="card p-4">
+            <h3 className="text-sm font-bold text-slate-800 mb-3">Recent Maintenance</h3>
             {recentMaintenance && recentMaintenance.length > 0 ? (
               <div className="space-y-3">
                 {recentMaintenance.map(m => (

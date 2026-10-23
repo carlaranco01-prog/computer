@@ -1,4 +1,4 @@
-export type Role = 'admin' | 'user'
+export type Role = 'admin' | 'staff' | 'user'
 export type ComputerStatus = 'Available' | 'Assigned' | 'Under Maintenance' | 'Damaged' | 'Retired'
 export type MaintenanceStatus = 'Pending' | 'In Progress' | 'Completed'
 export type AssignmentStatus = 'Active' | 'Returned'
@@ -9,6 +9,7 @@ export interface Profile {
   full_name: string
   email: string
   role: Role
+  avatar_url?: string | null
   created_at: string
 }
 

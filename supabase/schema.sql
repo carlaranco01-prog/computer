@@ -8,7 +8,7 @@ create table if not exists profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   full_name text not null,
   email text not null unique,
-  role text not null default 'user' check (role in ('admin', 'user')),
+  role text not null default 'user' check (role in ('admin', 'staff', 'user')),
   created_at timestamptz default now()
 );
 
@@ -130,30 +130,57 @@ returns boolean as $$
   );
 $$ language sql security definer;
 
+create or replace function is_staff()
+returns boolean as $$
+  select exists (
+    select 1 from profiles where id = auth.uid() and role = 'staff'
+  );
+$$ language sql security definer;
+
+create or replace function is_staff_or_admin()
+returns boolean as $$
+  select exists (
+    select 1 from profiles where id = auth.uid() and role in ('admin', 'staff')
+  );
+$$ language sql security definer;
+
+create or replace function is_user()
+returns boolean as $$
+  select exists (
+    select 1 from profiles where id = auth.uid() and role = 'user'
+  );
+$$ language sql security definer;
+
 -- PROFILES policies
 create policy "Users view own profile" on profiles for select using (auth.uid() = id);
 create policy "Admins view all profiles" on profiles for select using (is_admin());
+create policy "Staff view user profiles" on profiles for select
+  using (role = 'user' and is_staff_or_admin());
+create policy "Users view staff and admin profiles" on profiles for select
+  using (role in ('admin', 'staff') and is_user());
+create policy "Users create own user profile" on profiles for insert
+  with check (auth.uid() = id and role = 'user');
 create policy "Users update own profile" on profiles for update using (auth.uid() = id);
 create policy "Admins update any profile" on profiles for update using (is_admin());
 
 -- COMPUTERS policies
 create policy "Authenticated view computers" on computers for select using (auth.role() = 'authenticated');
-create policy "Admins insert computers" on computers for insert with check (is_admin());
-create policy "Admins update computers" on computers for update using (is_admin());
-create policy "Admins delete computers" on computers for delete using (is_admin());
+create policy "Admins insert computers" on computers for insert with check (is_staff_or_admin());
+create policy "Admins update computers" on computers for update using (is_staff_or_admin());
+create policy "Admins delete computers" on computers for delete using (is_staff_or_admin());
 
 -- COMPUTER ASSIGNMENTS policies
 create policy "Users view own assignments" on computer_assignments for select using (auth.uid() = user_id);
-create policy "Admins view all assignments" on computer_assignments for select using (is_admin());
-create policy "Admins insert assignments" on computer_assignments for insert with check (is_admin());
-create policy "Admins update assignments" on computer_assignments for update using (is_admin());
-create policy "Admins delete assignments" on computer_assignments for delete using (is_admin());
+create policy "Admins view all assignments" on computer_assignments for select using (is_staff_or_admin());
+create policy "Admins insert assignments" on computer_assignments for insert with check (is_staff_or_admin());
+create policy "Admins update assignments" on computer_assignments for update using (is_staff_or_admin());
+create policy "Admins delete assignments" on computer_assignments for delete using (is_staff_or_admin());
 
 -- MAINTENANCE policies
 create policy "Authenticated view maintenance" on maintenance for select using (auth.role() = 'authenticated');
-create policy "Admins insert maintenance" on maintenance for insert with check (is_admin());
-create policy "Admins update maintenance" on maintenance for update using (is_admin());
-create policy "Admins delete maintenance" on maintenance for delete using (is_admin());
+create policy "Admins insert maintenance" on maintenance for insert with check (is_staff_or_admin());
+create policy "Admins update maintenance" on maintenance for update using (is_staff_or_admin());
+create policy "Admins delete maintenance" on maintenance for delete using (is_staff_or_admin());
 
 -- MESSAGES policies
 create policy "Users view own messages" on messages for select using (auth.uid() = sender_id or auth.uid() = receiver_id);

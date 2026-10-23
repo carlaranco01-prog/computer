@@ -1,6 +1,5 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
-import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 interface OtpVerifyProps {
@@ -11,7 +10,6 @@ interface OtpVerifyProps {
 }
 
 export default function OtpVerify({ email, name, type, onBack }: OtpVerifyProps) {
-  const router = useRouter()
   const [digits, setDigits] = useState(['', '', '', '', '', ''])
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
@@ -72,40 +70,49 @@ export default function OtpVerify({ email, name, type, onBack }: OtpVerifyProps)
       return
     }
 
-    if (data.user && type === 'signup') {
-      const fullName = name || data.user.user_metadata?.full_name || ''
-      await supabase.from('profiles').upsert({
-        id: data.user.id,
-        full_name: fullName,
-        email: data.user.email ?? email,
-        role: 'user',
-      }, { onConflict: 'id' })
-
-      await supabase.from('activity_logs').insert({
-        user_id: data.user.id,
-        action: 'Account Verified',
-        description: 'Email OTP verified successfully',
-      })
+    if (!data.user) {
+      setError('Verification failed. Please try again.')
+      setLoading(false)
+      return
     }
 
-    if (data.user && type === 'login') {
-      await supabase.from('activity_logs').insert({
-        user_id: data.user.id,
-        action: 'Login',
-        description: 'User logged in via OTP',
-      })
+    const fullName = name || data.user.user_metadata?.full_name || data.user.email?.split('@')[0] || 'User'
+    const { error: profileSaveError } = await supabase.from('profiles').upsert({
+      id: data.user.id,
+      full_name: fullName,
+      email: data.user.email ?? email,
+      role: 'user',
+    }, { onConflict: 'id', ignoreDuplicates: true })
+
+    if (profileSaveError) {
+      setError(`Could not load your account profile: ${profileSaveError.message}`)
+      setLoading(false)
+      return
     }
+
+    await supabase.from('activity_logs').insert({
+      user_id: data.user.id,
+      action: type === 'signup' ? 'Account Verified' : 'Login',
+      description: type === 'signup' ? 'Email OTP verified successfully' : 'User logged in via OTP',
+    }).then(() => {})
 
     setSuccess('Verified! Redirecting...')
-    setTimeout(async () => {
-      if (type === 'signup') {
-        router.push('/login')
-      } else {
-        const { data: profile } = await supabase.from('profiles').select('role').eq('id', data.user!.id).maybeSingle()
-        router.push(profile?.role === 'admin' ? '/admin/dashboard' : '/dashboard')
-        router.refresh()
-      }
-    }, 1000)
+
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', data.user.id)
+      .maybeSingle()
+
+    if (profileError || !profile) {
+      setError(profileError?.message ?? 'Your account profile could not be found. Please try again.')
+      setLoading(false)
+      return
+    }
+
+    if (profile?.role === 'admin') window.location.href = '/admin/dashboard'
+    else if (profile?.role === 'staff') window.location.href = '/staff/dashboard'
+    else window.location.href = '/dashboard'
   }
 
   async function handleResend() {
