@@ -7,9 +7,17 @@ import { Toast, useToast } from '@/components/Toast'
 import { Profile, ComputerAssignment } from '@/types'
 import { Plus, Search } from 'lucide-react'
 
+interface ReturnRequest {
+  id: string
+  assignment_id: string
+  user_id: string
+  created_at: string
+}
+
 export default function StaffAssignmentsPage() {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [assignments, setAssignments] = useState<ComputerAssignment[]>([])
+  const [returnRequests, setReturnRequests] = useState<ReturnRequest[]>([])
   const [filtered, setFiltered] = useState<ComputerAssignment[]>([])
   const [computers, setComputers] = useState<{ id: string; computer_name: string; computer_code: string }[]>([])
   const [users, setUsers] = useState<Profile[]>([])
@@ -28,6 +36,13 @@ export default function StaffAssignmentsPage() {
     setProfile(p)
     const { data: a } = await supabase.from('computer_assignments').select('*, computers(*), profiles(*)').order('created_at', { ascending: false })
     setAssignments(a ?? [])
+    const { data: requests, error: requestsError } = await supabase
+      .from('return_requests')
+      .select('id, assignment_id, user_id, created_at')
+      .eq('status', 'Pending')
+      .order('created_at', { ascending: true })
+    if (requestsError) show(`Could not load return requests: ${requestsError.message}`, 'error')
+    else setReturnRequests(requests ?? [])
     const { data: c } = await supabase.from('computers').select('id, computer_name, computer_code, status').eq('status', 'Available')
     setComputers(c ?? [])
     const { data: u } = await supabase.from('profiles').select('*').eq('role', 'user')
@@ -67,10 +82,25 @@ export default function StaffAssignmentsPage() {
     setLoading(false)
   }
 
-  async function handleReturn(a: ComputerAssignment) {
+  async function handleReturn(a: ComputerAssignment, returnRequestId?: string) {
     const supabase = createClient()
-    await supabase.from('computer_assignments').update({ status: 'Returned', returned_date: new Date().toISOString().split('T')[0] }).eq('id', a.id)
-    await supabase.from('computers').update({ status: 'Available' }).eq('id', a.computer_id)
+    const { error: assignmentError } = await supabase
+      .from('computer_assignments')
+      .update({ status: 'Returned', returned_date: new Date().toISOString().split('T')[0] })
+      .eq('id', a.id)
+    if (assignmentError) { show(assignmentError.message, 'error'); return }
+
+    const { error: computerError } = await supabase.from('computers').update({ status: 'Available' }).eq('id', a.computer_id)
+    if (computerError) { show(computerError.message, 'error'); return }
+
+    if (returnRequestId) {
+      const { error: requestError } = await supabase
+        .from('return_requests')
+        .update({ status: 'Completed', completed_at: new Date().toISOString() })
+        .eq('id', returnRequestId)
+      if (requestError) { show(requestError.message, 'error'); loadData(); return }
+    }
+
     const { data: { user } } = await supabase.auth.getUser()
     if (user) await supabase.from('activity_logs').insert({ user_id: user.id, action: 'Computer Returned', description: `Computer returned` })
     show('Marked as returned.', 'success')
@@ -81,6 +111,31 @@ export default function StaffAssignmentsPage() {
     <AppShell role="staff" userName={profile?.full_name ?? ''} title="Manage Assignments">
       {toast && <Toast message={toast.message} type={toast.type} onClose={hide} />}
       <div className="space-y-4">
+        {returnRequests.length > 0 && (
+          <div className="card overflow-hidden">
+            <div className="p-4 border-b border-slate-200">
+              <h2 className="font-semibold text-slate-800">Pending Return Requests</h2>
+            </div>
+            <div className="divide-y divide-slate-100">
+              {returnRequests.map(request => {
+                const assignment = assignments.find(a => a.id === request.assignment_id)
+                if (!assignment) return null
+                return (
+                  <div key={request.id} className="p-4 flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
+                    <div>
+                      <p className="font-medium text-slate-800">{assignment.profiles?.full_name} requested to return {assignment.computers?.computer_name}</p>
+                      <p className="text-xs text-slate-500">{assignment.computers?.computer_code} · Requested {new Date(request.created_at).toLocaleString()}</p>
+                    </div>
+                    <button onClick={() => handleReturn(assignment, request.id)} className="text-xs btn-secondary py-1.5 px-3 shrink-0">
+                      Mark Returned
+                    </button>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
         <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
           <div className="flex gap-2 flex-1">
             <div className="relative flex-1 max-w-sm">
@@ -176,5 +231,4 @@ export default function StaffAssignmentsPage() {
     </AppShell>
   )
 }
-
 

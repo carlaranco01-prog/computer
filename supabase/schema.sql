@@ -43,6 +43,17 @@ create table if not exists computer_assignments (
   created_at timestamptz default now()
 );
 
+-- 3a. COMPUTER RETURN REQUESTS
+create table if not exists return_requests (
+  id uuid primary key default gen_random_uuid(),
+  assignment_id uuid not null references computer_assignments(id) on delete cascade,
+  user_id uuid not null references profiles(id) on delete cascade,
+  status text not null default 'Pending' check (status in ('Pending', 'Completed')),
+  created_at timestamptz not null default now(),
+  completed_at timestamptz,
+  unique (assignment_id, status)
+);
+
 -- 4. MAINTENANCE TABLE
 create table if not exists maintenance (
   id uuid primary key default gen_random_uuid(),
@@ -119,6 +130,7 @@ create trigger on_auth_user_created
 alter table profiles enable row level security;
 alter table computers enable row level security;
 alter table computer_assignments enable row level security;
+alter table return_requests enable row level security;
 alter table maintenance enable row level security;
 alter table messages enable row level security;
 alter table activity_logs enable row level security;
@@ -175,6 +187,24 @@ create policy "Admins view all assignments" on computer_assignments for select u
 create policy "Admins insert assignments" on computer_assignments for insert with check (is_staff_or_admin());
 create policy "Admins update assignments" on computer_assignments for update using (is_staff_or_admin());
 create policy "Admins delete assignments" on computer_assignments for delete using (is_staff_or_admin());
+
+-- RETURN REQUESTS policies
+create policy "Users view own return requests" on return_requests for select
+  using (auth.uid() = user_id);
+create policy "Staff view all return requests" on return_requests for select
+  using (is_staff_or_admin());
+create policy "Users request return for own active assignments" on return_requests for insert
+  with check (
+    auth.uid() = user_id
+    and status = 'Pending'
+    and exists (
+      select 1 from computer_assignments
+      where id = assignment_id and user_id = auth.uid() and status = 'Active'
+    )
+  );
+create policy "Staff complete return requests" on return_requests for update
+  using (is_staff_or_admin())
+  with check (is_staff_or_admin());
 
 -- MAINTENANCE policies
 create policy "Authenticated view maintenance" on maintenance for select using (auth.role() = 'authenticated');

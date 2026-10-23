@@ -2,6 +2,7 @@ import { requireAuth, getUserProfile } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/server'
 import AppShell from '@/components/AppShell'
 import { StatusBadge } from '@/components/Badges'
+import ReturnRequestButton from '@/components/ReturnRequestButton'
 import { Monitor } from 'lucide-react'
 
 export default async function ComputersPage() {
@@ -17,6 +18,14 @@ export default async function ComputersPage() {
     .single()
 
   const computer = assignment?.computers
+  const { data: pendingRequest } = assignment
+    ? await supabase
+      .from('return_requests')
+      .select('id')
+      .eq('assignment_id', assignment.id)
+      .eq('status', 'Pending')
+      .maybeSingle()
+    : { data: null }
 
   const specs = computer ? [
     { label: 'Computer Code', value: computer.computer_code },
@@ -60,6 +69,13 @@ export default async function ComputersPage() {
             <div className="mt-6 pt-4 border-t border-slate-100">
               <p className="text-xs text-slate-400">Assigned on {new Date(assignment!.assigned_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
             </div>
+            <div className="mt-4">
+              {pendingRequest ? (
+                <p className="text-sm font-medium text-amber-700">Return request sent. Please wait for staff to confirm the return.</p>
+              ) : (
+                <ReturnRequestButton assignmentId={assignment!.id} userId={profile!.id} />
+              )}
+            </div>
           </div>
         ) : (
           <div className="card p-12 text-center text-slate-400">
@@ -72,5 +88,4 @@ export default async function ComputersPage() {
     </AppShell>
   )
 }
-
 
