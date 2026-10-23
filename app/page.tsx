@@ -118,7 +118,7 @@ export default async function HomePage() {
             <p className="text-slate-400 mt-3 max-w-md mx-auto text-sm">All the tools to manage your computer lab or office equipment in one place.</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {features.map(({ icon: Icon, color, bg, title, desc, href, img }) => (
+            {features.map(({ icon: Icon, color, bg, title, desc, href }) => (
               <Link key={title} href={href} className="group relative overflow-hidden rounded-2xl border border-slate-100 hover:border-indigo-200 hover:shadow-lg transition-all duration-200 bg-white block p-5">
                 <div className={`w-10 h-10 ${bg} rounded-xl flex items-center justify-center mb-3`}>
                   <Icon size={18} className={color} />

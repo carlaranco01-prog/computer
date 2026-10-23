@@ -61,7 +61,7 @@ export default function OtpVerify({ email, name, type, onBack }: OtpVerifyProps)
     const { data, error: verifyError } = await supabase.auth.verifyOtp({
       email,
       token: otp,
-      type: 'email',
+      type: type === 'signup' ? 'signup' : 'email',
     })
 
     if (verifyError) {
@@ -96,6 +96,18 @@ export default function OtpVerify({ email, name, type, onBack }: OtpVerifyProps)
       description: type === 'signup' ? 'Email OTP verified successfully' : 'User logged in via OTP',
     }).then(() => {})
 
+    if (type === 'signup') {
+      const { error: signOutError } = await supabase.auth.signOut()
+      if (signOutError) {
+        setError(`Registration succeeded, but sign out failed: ${signOutError.message}`)
+        setLoading(false)
+        return
+      }
+      setSuccess('Registration complete! Redirecting to sign in...')
+      window.location.href = '/login'
+      return
+    }
+
     setSuccess('Verified! Redirecting...')
 
     const { data: profile, error: profileError } = await supabase
@@ -119,10 +131,12 @@ export default function OtpVerify({ email, name, type, onBack }: OtpVerifyProps)
     setResending(true)
     setError('')
     const supabase = createClient()
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: { shouldCreateUser: type === 'signup' },
-    })
+    const { error } = type === 'signup'
+      ? await supabase.auth.resend({ type: 'signup', email })
+      : await supabase.auth.signInWithOtp({
+          email,
+          options: { shouldCreateUser: false },
+        })
     if (error) setError(error.message)
     else { setSuccess('Code resent! Check your email.'); setCountdown(60) }
     setResending(false)

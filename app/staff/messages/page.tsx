@@ -29,8 +29,10 @@ export default function StaffMessagesPage() {
     load()
   }, [])
 
+  if (!profile) return null
+
   return (
-    <AppShell role="staff" userName={profile?.full_name ?? ''} title="Messages">
+    <AppShell role="staff" userName={profile.full_name} title="Messages">
       <div className="flex gap-4 h-[calc(100vh-8rem)]">
         <div className="w-64 shrink-0 card overflow-y-auto">
           <div className="p-4 border-b border-slate-100">
@@ -88,5 +90,3 @@ export default function StaffMessagesPage() {
     </AppShell>
   )
 }
-
-

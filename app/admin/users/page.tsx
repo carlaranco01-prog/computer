@@ -66,8 +66,10 @@ export default function AdminUsersPage() {
 
   const roleCounts = { all: users.length, admin: users.filter(u => u.role === 'admin').length, staff: users.filter(u => u.role === 'staff').length, user: users.filter(u => u.role === 'user').length }
 
+  if (!profile) return null
+
   return (
-    <AppShell role="admin" userName={profile?.full_name ?? ''} title="Manage Users" profile={profile!}>
+    <AppShell role="admin" userName={profile.full_name} title="Manage Users" profile={profile}>
       {toast && <Toast message={toast.message} type={toast.type} onClose={hide} />}
       <div className="space-y-4">
 
@@ -205,5 +207,4 @@ export default function AdminUsersPage() {
     </AppShell>
   )
 }
-
 

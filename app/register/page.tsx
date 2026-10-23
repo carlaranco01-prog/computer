@@ -63,13 +63,6 @@ export default function RegisterPage() {
       return
     }
 
-    const { error: otpError } = await supabase.auth.signInWithOtp({
-      email: form.email,
-      options: { shouldCreateUser: false },
-    })
-
-    if (otpError) { setError(otpError.message); setLoading(false); return }
-
     setOtpSent(true)
     setLoading(false)
   }
